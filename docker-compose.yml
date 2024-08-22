@@ -1,0 +1,35 @@
+services:
+  api:
+    image: "grisha-golem/decentralized-computer:latest"
+    build:
+      context: .
+    environment:
+      AMQP_URL: "amqp://rabbitmq-queue"
+      POSTGRES_URL: "postgres://dbuser:dbpassword@postgres-db/dbname"
+      PORT: "8080"
+    command: "npm run start:api"
+    ports:
+      - "8080:8080"
+  rabbitmq-queue:
+    image: "rabbitmq:3-management"
+    ports:
+      - "15672:15672"
+  postgres-db:
+    image: "postgres:16"
+    environment:
+      POSTGRES_USER: "dbuser"
+      POSTGRES_DB: "dbname"
+      POSTGRES_PASSWORD: "dbpassword"
+    ports:
+      - "5432:5432"
+  worker:
+    image: "grisha-golem/decentralized-computer:latest"
+    build:
+      context: .
+    environment:
+      AMQP_URL: "amqp://rabbitmq-queue"
+      POSTGRES_URL: "postgres://dbuser:dbpassword@postgres-db/dbname"
+    command: "npm run start:worker"
+    depends_on:
+      - rabbitmq-queue
+      - postgres-db
