@@ -61,7 +61,7 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
         avgGlmPerHour: 3,
       },
       offerProposalFilter: (proposal) =>
-        AVOIDED_PROVIDERS.includes(proposal.provider.id),
+        !AVOIDED_PROVIDERS.includes(proposal.provider.id),
     };
 
     const network = await glm.createNetwork({
@@ -94,9 +94,9 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
     const ipDatabase = exeDatabase.getIp();
 
     // Make stuff executable for non-root users... (gosu)
-    // NOTE: Required when golem.runtime.version<0.4.1
-    // console.log("Apply the workaround to make gosu work");
-    // console.log(await exeDatabase.run("chmod a+x -R /"));
+    // NOTE: Required when golem.runtime.version<0.4.1 #TODO: Feature flagging?
+    console.log("Apply the workaround to make gosu work");
+    console.log(await exeDatabase.run("chmod a+x -R /"));
 
     // Prevents: FATAL:  could not write lock file "/var/run/postgresql/.s.PGSQL.5432.lock": No space left on device
     console.log("Apply the workaround to have space for runtime data");
