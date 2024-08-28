@@ -1,0 +1,20 @@
+{
+  "name": "golem-requestor",
+  "version": "1.0.0",
+  "description": "Example Golem Requestor script obtaining infrastructure and orchestrating deployment of the solution on top of Golem Network",
+  "scripts": {
+    "prebuild": "rimraf dist/",
+    "build": "tsc -b"
+  },
+  "author": "Grzegorz Godlewski <grzegorz.godlewski@golem.network>",
+  "license": "ISC",
+  "dependencies": {
+    "@golem-sdk/pino-logger": "^1.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
+  }
+}

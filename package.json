@@ -1,0 +1,16 @@
+{
+  "name": "eth-warsaw-dc-app",
+  "version": "1.0.0",
+  "description": "Example Golem Network based solution prepared for ETH Warsaw 2024",
+  "scripts": {
+    "format": "prettier -w ."
+  },
+  "author": "Grzegorz Godlewski <grzegorz.godlewski@golem.network>",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  },
+  "workspaces": [
+    "workspaces/*"
+  ]
+}
