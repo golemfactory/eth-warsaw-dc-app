@@ -1,8 +1,7 @@
 {
   "name": "decentralized-computer",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Example application that can be run with Docker Compose, containerized and then moved to Golem Network",
   "scripts": {
     "prebuild": "rimraf dist/",
     "build": "tsc -b",
@@ -13,7 +12,7 @@
     "format": "prettier -w ."
   },
   "keywords": [],
-  "author": "",
+  "author": "Grzegorz Godlewski <grzegorz.godlewski@golem.network>",
   "license": "ISC",
   "devDependencies": {
     "@types/express": "^4.17.21",

@@ -7,5 +7,5 @@ RUN npm install
 
 VOLUME /tmp/foo
 
-COPY . /usr/src/app
+COPY ./ /usr/src/app
 RUN npm run build
