@@ -24,7 +24,7 @@ import cluster from "node:cluster";
     }
 
     cluster.on("exit", (worker, code, signal) => {
-      console.log(`Worker ${worker.process.pid} died`, worker, code, signal);
+      console.log(`Worker ${worker.process.pid} died`, code, signal);
     });
   } else {
     console.debug("Staring up worker process", process.pid);
