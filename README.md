@@ -52,8 +52,14 @@ In essence, this project's aim is to _ensure that it runs on Golem Network_.
 ### The `application`
 
 ```bash
+# Clone the code
+git clone https://github.com/golemfactory/eth-warsaw-dc-app.git
+cd eth-warsaw-dc-app
+
+# Install packages
 npm install
 
+# Start the project in docker
 cd workspaces/application
 docker compose build
 docker compose up -d
@@ -66,8 +72,7 @@ docker compose exec api bash -c "npm run db:schema:sync"
 
 > ⚠ IMPORTANT ⚠
 >
-> Make sure that you stopped the `docker-compose` project first before you run the requestor script to not encounter "
-> port taken" issues.
+> Make sure that you stopped the `docker-compose` project first before you run the requestor script to not encounter "port taken" issues.
 
 ```bash
 cd workspaces/golem-requestor
