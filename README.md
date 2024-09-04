@@ -109,6 +109,18 @@ docker compose up -d
 docker compose exec api bash -c "npm run db:schema:sync"
 ```
 
+You can now request a calculation via the API exposed on your local machine:
+
+```bash
+curl -X POST -d '{"a":1, "b":1}' -H 'Content-Type: application/json' http://localhost:8080/add | jq
+```
+
+And retrieve the list of results
+
+```bash
+curl -H 'Content-Type: application/json' http://localhost:8080/results | jq
+```
+
 ### The worker script
 
 > ⚠ IMPORTANT ⚠
@@ -122,3 +134,17 @@ echo 'YAGNA_APPKEY=ec90...20e3' > .env
 npm run build
 npm start
 ```
+
+The script will expose the REST API and RabbitMQ Management UI:
+
+* [http://localhost:8080]() - the API service exposed on requestor
+* [http://localhost:15672]() - RabbitMQ management UI, login credentials `guest/guest`
+
+You can now use the same `curl` commands like in the docker-compose example, but this time these will be executed by the processes running on Golem Network.
+
+### Building for Golem Registry
+
+If you wish to build and push the `application` into the Golem Registry to use it with the `golem-requestor` script:
+
+1. Register yourself to the Golem Registry
+2. ...
