@@ -159,5 +159,27 @@ You can now use the same `curl` commands like in the docker-compose example, but
 
 If you wish to build and push the `application` into the Golem Registry to use it with the `golem-requestor` script:
 
-1. Register yourself to the Golem Registry
-2. ...
+### Registration to Golem Registry required
+
+If you want to publish your images to the Golem Registry, you need to have an account a https://registry.golem.network. Once you register, navigate to `Settings` and create a _Personal Access Token_ - you will use it together with your account name (registry username) to publish the images.
+
+In the `Repostories` tab, create a new repository to which the image will be uploaded. The name you provide will be used to build the image name from `your-username/new-repository-name`.
+
+Given you have your:
+- registry username
+- personal access token
+- name of the repository
+
+We can use the `golem-network` toolkit to build the image:
+
+```bash
+cd workspaces/application
+
+# Produces `grisha-golem/decentralized-computer:latest` image
+docker compose build
+
+# Use that image in the next step
+# export REGISTRY_USER=your-username
+# export REGISTRY_TOKEN=***
+gvmkit-build build grisha-golem/decentralized-computer:latest --push
+```
