@@ -10,10 +10,31 @@ services:
     command: "npm run start:api"
     ports:
       - "8080:8080"
+    depends_on:
+      rabbitmq-queue:
+        condition: service_healthy
+      postgres-db:
+        condition: service_healthy
+  worker:
+    image: "grisha-golem/decentralized-computer:latest"
+    environment:
+      AMQP_URL: "amqp://rabbitmq-queue"
+      POSTGRES_URL: "postgres://dbuser:dbpassword@postgres-db/dbname"
+    command: "npm run start:worker"
+    depends_on:
+      rabbitmq-queue:
+        condition: service_healthy
+      postgres-db:
+        condition: service_healthy
   rabbitmq-queue:
     image: "rabbitmq:3-management"
     ports:
       - "15672:15672"
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   postgres-db:
     image: "postgres:16"
     environment:
@@ -22,12 +43,8 @@ services:
       POSTGRES_PASSWORD: "dbpassword"
     ports:
       - "5432:5432"
-  worker:
-    image: "grisha-golem/decentralized-computer:latest"
-    environment:
-      AMQP_URL: "amqp://rabbitmq-queue"
-      POSTGRES_URL: "postgres://dbuser:dbpassword@postgres-db/dbname"
-    command: "npm run start:worker"
-    depends_on:
-      - rabbitmq-queue
-      - postgres-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
