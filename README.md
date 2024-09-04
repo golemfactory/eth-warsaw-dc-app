@@ -1,14 +1,15 @@
 # Golem Network based Decentralized Computer
 
 <!-- TOC -->
-- [Golem Network based Decentralized Computer](#golem-network-based-decentralized-computer)
-  - [About this project](#about-this-project)
-  - [Project structure](#project-structure)
-    - [The `application` workspace](#the-application-workspace)
-    - [The `golem-requestor` workspace](#the-golem-requestor-workspace)
-  - [Building and running](#building-and-running)
-    - [The `application`](#the-application)
-    - [The worker script](#the-worker-script)
+* [Golem Network based Decentralized Computer](#golem-network-based-decentralized-computer)
+  * [About this project](#about-this-project)
+  * [Project structure](#project-structure)
+    * [The `application` workspace](#the-application-workspace)
+    * [The `golem-requestor` workspace](#the-golem-requestor-workspace)
+    * [Architecture diagram](#architecture-diagram)
+  * [Building and running](#building-and-running)
+    * [The `application`](#the-application)
+    * [The worker script](#the-worker-script)
 <!-- TOC -->
 
 ## About this project
@@ -46,6 +47,46 @@ Contains the _requestor script_ for the project which:
 4. Acts as a Proxy to implement _inbound_ access to the REST API of the `api` process.
 
 In essence, this project's aim is to _ensure that it runs on Golem Network_.
+
+### Architecture diagram
+
+The following diagram depicts the general architecture.
+
+```mermaid
+flowchart LR
+   User --> TcpProxy
+   subgraph RequestorScript
+      TcpProxy
+   end
+   subgraph GolemNetwork
+      subgraph Provider1
+         API
+      end
+
+      subgraph Provider2
+         QUEUE
+      end
+
+      subgraph Provider3
+         direction LR
+         WORKER-1
+         WORKER-2
+         WORKER-3
+         WORKER-4
+      end
+
+      subgraph Provider4
+         DB
+      end
+
+      TcpProxy -- "Forward API calls" --> API
+      TcpProxy -- "Access management UI" --> QUEUE
+      API --> QUEUE
+      API --> DB
+      QUEUE --> Provider3
+      Provider3 --> DB
+   end
+```
 
 ## Building and running
 
