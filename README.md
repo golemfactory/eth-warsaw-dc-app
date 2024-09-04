@@ -15,6 +15,8 @@
       * [Building](#building-1)
       * [Usage](#usage-1)
   * [Building for Golem Registry](#building-for-golem-registry)
+    * [Registration to Golem Registry required](#registration-to-golem-registry-required)
+    * [Convert a docker image into GVMI and publish to Registry](#convert-a-docker-image-into-gvmi-and-publish-to-registry)
 <!-- TOC -->
 
 ## About this project
@@ -150,8 +152,8 @@ npm start
 
 The script will expose the REST API and RabbitMQ Management UI:
 
-* [http://localhost:8080]() - the API service exposed on requestor
-* [http://localhost:15672]() - RabbitMQ management UI, login credentials `guest/guest`
+- [http://localhost:8080]() - the API service exposed on requestor
+- [http://localhost:15672]() - RabbitMQ management UI, login credentials `guest/guest`
 
 You can now use the same `curl` commands like in the docker-compose example, but this time these will be executed by the processes running on Golem Network.
 
@@ -165,7 +167,10 @@ If you want to publish your images to the Golem Registry, you need to have an ac
 
 In the `Repostories` tab, create a new repository to which the image will be uploaded. The name you provide will be used to build the image name from `your-username/new-repository-name`.
 
+### Convert a docker image into GVMI and publish to Registry
+
 Given you have your:
+
 - registry username
 - personal access token
 - name of the repository
