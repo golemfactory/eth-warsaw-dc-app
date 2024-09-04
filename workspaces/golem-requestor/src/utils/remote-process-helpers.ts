@@ -1,5 +1,7 @@
 // @ts-ignore
 import { RemoteProcess } from "@golem-sdk/golem-js/dist/activity/exe-unit/process";
+import { createWriteStream, mkdirSync, existsSync } from "fs";
+import { join } from "path";
 
 type RemoteProcessStdIOChunk = string | ArrayBuffer | null | undefined;
 
@@ -23,6 +25,39 @@ export const forwardToConsole = (proc: RemoteProcess, name: string) => {
       console.error("[%s] LOG: %s", name, line),
     ),
   );
+};
+
+export const forwardToFile = (
+  proc: RemoteProcess,
+  name: string,
+  outputDir: string = "./logs",
+) => {
+  if (!existsSync(outputDir)) {
+    mkdirSync(outputDir, { recursive: true });
+  }
+  // open files name.out.log and name.err.log, then produce lines into that file, close the file on error or complete
+  const outPath = join(outputDir, `${name}.out.log`);
+  const errPath = join(outputDir, `${name}.err.log`);
+
+  const outStream = createWriteStream(outPath);
+  const errStream = createWriteStream(errPath);
+
+  const closeFiles = () => {
+    errStream.close();
+    outStream.close();
+  };
+
+  proc.stderr.subscribe({
+    next: (data: RemoteProcessStdIOChunk) => errStream.write(data),
+    complete: closeFiles,
+    error: closeFiles,
+  });
+
+  proc.stdout.subscribe({
+    next: (data: RemoteProcessStdIOChunk) => outStream.write(data),
+    complete: closeFiles,
+    error: closeFiles,
+  });
 };
 
 /**

@@ -68,6 +68,10 @@ import cluster from "node:cluster";
     });
 
     const shutdown = async () => {
+      console.log("Cancelling subscription");
+      await subscription.cancel();
+      console.log("Subscription cancelled");
+
       console.log("Closing broker connection");
       await broker.shutdown();
       console.log("Closed the broker connection");
@@ -79,8 +83,10 @@ import cluster from "node:cluster";
 
     process.on("SIGINT", shutdown);
     process.on("SIGTERM", shutdown);
+
+    console.log("Worker startup finished", process.pid);
   }
 })().catch((err) => {
-  console.error("Failed to run the API app", err);
+  console.error("Failed to run the WORKER process", err);
   process.exit(1);
 });

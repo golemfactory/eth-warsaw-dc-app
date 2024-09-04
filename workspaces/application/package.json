@@ -8,6 +8,7 @@
     "start:api": "node dist/api",
     "start:worker": "node dist/worker",
     "typeorm": "typeorm-ts-node-commonjs",
+    "db:schema:sync": "typeorm schema:sync -d dist/shared/db/data-source.js",
     "start": "ts-node src/index.ts",
     "format": "prettier -w ."
   },

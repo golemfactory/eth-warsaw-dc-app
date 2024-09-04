@@ -2,11 +2,13 @@ import "dotenv/config";
 import {
   GolemNetwork,
   MarketOrderSpec,
+  OfferProposal,
   sleep,
   waitFor,
 } from "@golem-sdk/golem-js";
-import { forwardToConsole, toEnvString } from "./utils/remote-process-helpers";
+import { forwardToFile, toEnvString } from "./utils/remote-process-helpers";
 import { pinoPrettyLogger } from "@golem-sdk/pino-logger";
+import wtf from "wtfnode";
 
 const PROVIDER_BLACKLIST: Array<{ id: string; name: string }> = [
   // {
@@ -33,9 +35,12 @@ const PROVIDER_BLACKLIST: Array<{ id: string; name: string }> = [
 
 const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
 
+function isNotAvoidedProvider(proposal: OfferProposal) {
+  return !AVOIDED_PROVIDERS.includes(proposal.provider.id);
+}
+
 (async () => {
-  const LOCAL_GVMI_PATH =
-    "file:///home/ggodlewski/test-workshop/decentralized-computer/workspaces/application/ggodlewski-decentralized-computer-latest-45a87194d5.gvmi";
+  const APPLICATION_IMAGE = "grisha-golem/decentralized-computer:latest";
 
   const glm = new GolemNetwork({
     logger: pinoPrettyLogger({
@@ -48,9 +53,16 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
 
     const abortController = new AbortController();
 
+    let terminating = false;
     process.on("SIGINT", () => {
       console.log("SIGINT received, PID", process.pid);
       abortController.abort("SIGINT called");
+
+      if (terminating) {
+        wtf.dump();
+      }
+
+      terminating = true;
     });
 
     const marketConfig: MarketOrderSpec["market"] = {
@@ -60,8 +72,14 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
         model: "burn-rate",
         avgGlmPerHour: 3,
       },
-      offerProposalFilter: (proposal) =>
-        !AVOIDED_PROVIDERS.includes(proposal.provider.id),
+    };
+
+    const workloadRequirements: MarketOrderSpec["demand"]["workload"] = {
+      runtime: {
+        name: "vm",
+        version: "0.4.2",
+      },
+      minCpuThreads: 2,
     };
 
     const network = await glm.createNetwork({
@@ -73,6 +91,7 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
       order: {
         demand: {
           workload: {
+            ...workloadRequirements,
             imageTag: "golem/postgres:16",
           },
         },
@@ -82,34 +101,36 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
       signalOrTimeout: abortController.signal,
     });
 
-    console.log(
-      "Starting database service on %s, %s, agreement ID",
-      srvDatabase.agreement.provider.name,
-      srvDatabase.agreement.provider.id,
-      srvDatabase.agreement.id,
-      srvDatabase.agreement,
-    );
-
     const exeDatabase = await srvDatabase.getExeUnit(abortController.signal);
     const ipDatabase = exeDatabase.getIp();
 
     // Make stuff executable for non-root users... (gosu)
-    // NOTE: Required when golem.runtime.version<0.4.1 #TODO: Feature flagging?
-    console.log("Apply the workaround to make gosu work");
-    console.log(await exeDatabase.run("chmod a+x -R /"));
+    // NOTE: Required when golem.runtime.version<0.4.1
+    // console.log("Apply the workaround to make gosu work");
+    // console.log(await exeDatabase.run("chmod a+rx /"));
+
+    // NOTE: Required when golem.runtime.version<0.4.1
+    // console.log(
+    //   "Make sure that the data director will be usable by user 'postgres'",
+    // );
+    // console.log(
+    //   await exeDatabase.run(
+    //     "chown -R postgres:postgres /var/lib/postgresql/data",
+    //   ),
+    // );
 
     // Prevents: FATAL:  could not write lock file "/var/run/postgresql/.s.PGSQL.5432.lock": No space left on device
-    console.log("Apply the workaround to have space for runtime data");
-    console.log(
-      await exeDatabase.run(
-        "mount -t tmpfs -o size=500m none /var/run/postgresql",
-      ),
-    );
+    // console.log("Apply the workaround to have space for runtime data");
+    // console.log(
+    //   await exeDatabase.run(
+    //     "mount -t tmpfs -o size=500m none /var/run/postgresql",
+    //   ),
+    // );
 
     // Workaround that prevents `ERR: initdb: error: could not open file "/dev/fd/63" for reading: No such file or directory`
     // resulting from usage of named pipes by postgres startup script
-    console.log("Apply the workaround to enable named pipes usage");
-    console.log(await exeDatabase.run("ln -s /proc/self/fd /dev/fd"));
+    // console.log("Apply the workaround to enable named pipes usage");
+    // console.log(await exeDatabase.run("ln -s /proc/self/fd /dev/fd"));
 
     const databaseEnv = {
       POSTGRES_USER: "dbuser",
@@ -127,13 +148,14 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
         signalOrTimeout: abortController.signal,
       },
     );
-    forwardToConsole(procDatabase, "database");
+    forwardToFile(procDatabase, "database");
 
     console.log("Acquiring resources for Queue");
     const srvQueue = await glm.oneOf({
       order: {
         demand: {
           workload: {
+            ...workloadRequirements,
             imageTag: "golem/rabbitmq:3-management",
           },
         },
@@ -153,7 +175,7 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
     const procQueue = await exeQueue.runAndStream("rabbitmq-server", {
       signalOrTimeout: abortController.signal,
     });
-    //forwardToConsole(procQueue, "queue");
+    forwardToFile(procQueue, "queue");
 
     console.log("Exposing TCP Proxy to RabbitMQ management UI");
     const proxyQueue = exeQueue.createTcpProxy(RABBITMQ_MANAGEMENT_PORT);
@@ -176,8 +198,8 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
       order: {
         demand: {
           workload: {
-            imageUrl: LOCAL_GVMI_PATH,
-            minCpuCores: 2,
+            ...workloadRequirements,
+            imageTag: APPLICATION_IMAGE,
           },
         },
         market: marketConfig,
@@ -195,13 +217,13 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
     };
 
     const procApi = await exeApi.runAndStream(
-      toEnvString(apiEnv) + " npm run start:api",
+      `export ${toEnvString(apiEnv)}; npm run db:schema:sync; npm run start:api`,
       {
         env: apiEnv,
         signalOrTimeout: abortController.signal,
       },
     );
-    forwardToConsole(procApi, "api");
+    forwardToFile(procApi, "api");
 
     let isApiListening = false;
     procApi.stdout.subscribe((line) => {
@@ -237,8 +259,8 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
       order: {
         demand: {
           workload: {
-            imageUrl: LOCAL_GVMI_PATH,
-            minCpuCores: 4,
+            ...workloadRequirements,
+            imageTag: APPLICATION_IMAGE,
           },
         },
         market: marketConfig,
@@ -260,7 +282,7 @@ const AVOIDED_PROVIDERS = PROVIDER_BLACKLIST.map((p) => p.id);
         signalOrTimeout: abortController.signal,
       },
     );
-    forwardToConsole(procWorker, "worker");
+    forwardToFile(procWorker, "worker");
 
     console.log("Started all services");
 

@@ -76,6 +76,6 @@ import os from "node:os";
     process.on("SIGTERM", shutdown);
   }
 })().catch((err) => {
-  console.error("Failed to run the API app", err);
+  console.error("Failed to run the API process", err);
   process.exit(1);
 });
