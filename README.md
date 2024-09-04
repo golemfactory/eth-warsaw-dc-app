@@ -54,38 +54,38 @@ The following diagram depicts the general architecture.
 
 ```mermaid
 flowchart LR
-   User --> TcpProxy
-   subgraph RequestorScript
-      TcpProxy
-   end
-   subgraph GolemNetwork
-      subgraph Provider1
-         API
-      end
+  User --> TcpProxy
+  subgraph RequestorScript
+    TcpProxy
+  end
+  subgraph GolemNetwork
+    subgraph Provider1
+      API
+    end
 
-      subgraph Provider2
-         QUEUE
-      end
+    subgraph Provider2
+      QUEUE
+    end
 
-      subgraph Provider3
-         direction LR
-         WORKER-1
-         WORKER-2
-         WORKER-3
-         WORKER-4
-      end
+    subgraph Provider3
+      direction LR
+      WORKER-1
+      WORKER-2
+      WORKER-3
+      WORKER-4
+    end
 
-      subgraph Provider4
-         DB
-      end
+    subgraph Provider4
+      DB
+    end
 
-      TcpProxy -- "Forward API calls" --> API
-      TcpProxy -- "Access management UI" --> QUEUE
-      API --> QUEUE
-      API --> DB
-      QUEUE --> Provider3
-      Provider3 --> DB
-   end
+    API --> QUEUE
+    TcpProxy -- " Forward API calls " --> API
+    TcpProxy -- " Access management UI " --> QUEUE
+    API --> DB
+    QUEUE --> Provider3
+    Provider3 --> DB
+  end
 ```
 
 ## Building and running
