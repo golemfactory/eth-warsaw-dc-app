@@ -7,9 +7,14 @@
     * [The `application` workspace](#the-application-workspace)
     * [The `golem-requestor` workspace](#the-golem-requestor-workspace)
     * [Architecture diagram](#architecture-diagram)
-  * [Building and running](#building-and-running)
+  * [Building and usage](#building-and-usage)
     * [The `application`](#the-application)
-    * [The worker script](#the-worker-script)
+      * [Building](#building)
+      * [Usage](#usage)
+    * [The `golem-requestor` script](#the-golem-requestor-script)
+      * [Building](#building-1)
+      * [Usage](#usage-1)
+  * [Building for Golem Registry](#building-for-golem-registry)
 <!-- TOC -->
 
 ## About this project
@@ -88,9 +93,11 @@ flowchart LR
   end
 ```
 
-## Building and running
+## Building and usage
 
 ### The `application`
+
+#### Building
 
 ```bash
 # Clone the code
@@ -109,6 +116,8 @@ docker compose up -d
 docker compose exec api bash -c "npm run db:schema:sync"
 ```
 
+#### Usage
+
 You can now request a calculation via the API exposed on your local machine:
 
 ```bash
@@ -121,11 +130,13 @@ And retrieve the list of results
 curl -H 'Content-Type: application/json' http://localhost:8080/results | jq
 ```
 
-### The worker script
+### The `golem-requestor` script
 
 > ⚠ IMPORTANT ⚠
 >
 > Make sure that you stopped the `docker-compose` project first before you run the requestor script to not encounter "port taken" issues.
+
+#### Building
 
 ```bash
 cd workspaces/golem-requestor
@@ -135,6 +146,8 @@ npm run build
 npm start
 ```
 
+#### Usage
+
 The script will expose the REST API and RabbitMQ Management UI:
 
 * [http://localhost:8080]() - the API service exposed on requestor
@@ -142,7 +155,7 @@ The script will expose the REST API and RabbitMQ Management UI:
 
 You can now use the same `curl` commands like in the docker-compose example, but this time these will be executed by the processes running on Golem Network.
 
-### Building for Golem Registry
+## Building for Golem Registry
 
 If you wish to build and push the `application` into the Golem Registry to use it with the `golem-requestor` script:
 
