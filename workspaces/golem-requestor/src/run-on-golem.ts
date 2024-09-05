@@ -79,7 +79,7 @@ function isNotAvoidedProvider(proposal: OfferProposal) {
         name: "vm",
         version: "0.4.2",
       },
-      minCpuThreads: 2,
+      minCpuThreads: 4,
     };
 
     const network = await glm.createNetwork({
@@ -260,6 +260,7 @@ function isNotAvoidedProvider(proposal: OfferProposal) {
         demand: {
           workload: {
             ...workloadRequirements,
+            minCpuThreads: 8,
             imageTag: APPLICATION_IMAGE,
           },
         },
