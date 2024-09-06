@@ -1,5 +1,4 @@
-// @ts-ignore
-import { RemoteProcess } from "@golem-sdk/golem-js/dist/activity/exe-unit/process";
+import { RemoteProcess } from "@golem-sdk/golem-js";
 import { createWriteStream, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 
